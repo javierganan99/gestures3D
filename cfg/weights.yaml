@@ -1,0 +1,2 @@
+skeleton: weights/yolov7-w6-pose.pt
+gesture: weights/model_gestures

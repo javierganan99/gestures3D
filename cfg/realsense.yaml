@@ -1,0 +1,13 @@
+image_width: 640
+image_height: 480
+camera_name: "Intel RealSense D435"
+camera_matrix: # Intrinsic camera matrix
+  rows: 3
+  cols: 3
+  data: [577.9849, 0.0, 315.1605, 0.0, 578.8269, 249.7279, 0.0, 0.0, 1.0]
+distortion_coefficients:
+  rows: 1
+  cols: 5
+  data: [-0.1712, 0.0266, 0.0009, -0.0006, 0]
+depth_scale: 0.0010000000474974513 # Scale factor to convert depth data to meters
+window_size: 10 # Window size to filter depth
