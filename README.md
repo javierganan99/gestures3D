@@ -50,12 +50,12 @@ cd your_path_to_repo_parent_folder/gestures3D
 mkdir weights && cd weights
 ```
 
-YOLOv7 pose model for skeleton detection
+[YOLOv7 pose model](https://github.com/WongKinYiu/yolov7/releases/download/v0.1/yolov7-w6-pose.pt) for skeleton detection
 ```
 wget --no-check-certificate 'https://docs.google.com/uc?export=download&id=1KPu864GqracT9QjiWED-X85kte5T8-1x' -O yolov7-w6-pose.pt
 ```
 
-ST-GCN trained for 6 aircraft marshalling signals
+[ST-GCN trained](https://github.com/javierganan99/gestures3D/files/11475314/model_gestures.zip) for 6 aircraft marshalling signals
 ```
 wget --no-check-certificate 'https://docs.google.com/uc?export=download&id=1ivZv5z8ZgFCgD17OSHm8Ezms9ACWAnMu' -O model_gestures
 ```
