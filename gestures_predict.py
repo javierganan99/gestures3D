@@ -20,7 +20,7 @@ class DetectSkeleton:
         self.half = self.device.type != "cpu"  # half precision only supported on CUDA
 
         # Load model
-        self.model = attempt_load(weights, map_location=device)  # load FP32 model
+        self.model = attempt_load(weights, map_location=self.device)  # load FP32 model
         if self.half:
             self.model.half()  # to FP16
         stride = int(self.model.stride.max())  # model stride
@@ -54,12 +54,7 @@ class DetectSkeleton:
             img = img.unsqueeze(0)
 
         # Warmup
-        if self.device.type != "cpu" and (
-            old_img_b != img.shape[0] or old_img_h != img.shape[2] or old_img_w != img.shape[3]
-        ):
-            old_img_b = img.shape[0]
-            old_img_h = img.shape[2]
-            old_img_w = img.shape[3]
+        if self.device.type != "cpu":
             for _ in range(3):
                 self.model(img, augment=False)[0]
 
@@ -139,7 +134,7 @@ def predict():
         cont += 1
         # 3rd STEP: Predict skeleton
         t0 = time.time()
-        outputs = model(torch.from_numpy(buffer.buffer))
+        outputs = model(torch.from_numpy(buffer.buffer).to(device))
         t1 = time.time()
         print("Inference time for the gesture: {:.2f} s.".format(t1 - t0))
         prediction = torch.argmax(outputs, dim=1)
@@ -160,4 +155,5 @@ if __name__ == "__main__":
     parser.add_argument("--output_path", type=str, default="runs", help="Output path")
     opt = parser.parse_args()
     print(opt)
-    predict()
+    with torch.no_grad():
+        predict()
