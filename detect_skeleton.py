@@ -44,7 +44,9 @@ def detect(weights, view_img, imgsz, annot, source, subsampling=0):
 
     # Run inference
     if device.type != "cpu":
-        model(torch.zeros(1, 3, imgsz, imgsz).to(device).type_as(next(model.parameters())))  # run once
+        model(
+            torch.zeros(1, 3, imgsz, imgsz).to(device).type_as(next(model.parameters()))
+        )  # run once
     old_img_w = old_img_h = imgsz
     old_img_b = 1
     t0 = time.time()
@@ -75,7 +77,9 @@ def detect(weights, view_img, imgsz, annot, source, subsampling=0):
 
         # Warmup
         if device.type != "cpu" and (
-            old_img_b != img.shape[0] or old_img_h != img.shape[2] or old_img_w != img.shape[3]
+            old_img_b != img.shape[0]
+            or old_img_h != img.shape[2]
+            or old_img_w != img.shape[3]
         ):
             old_img_b = img.shape[0]
             old_img_h = img.shape[2]
@@ -90,7 +94,14 @@ def detect(weights, view_img, imgsz, annot, source, subsampling=0):
         t2 = time_synchronized()
 
         # Apply NMS
-        pred = non_max_suppression_kpt(pred, 0.25, 0.65, nc=model.yaml["nc"], nkpt=model.yaml["nkpt"], kpt_label=True)
+        pred = non_max_suppression_kpt(
+            pred,
+            0.25,
+            0.65,
+            nc=model.yaml["nc"],
+            nkpt=model.yaml["nkpt"],
+            kpt_label=True,
+        )
         t3 = time_synchronized()
 
         # Process detections
@@ -104,7 +115,9 @@ def detect(weights, view_img, imgsz, annot, source, subsampling=0):
             sk.plot_skeleton(nimg, depth=depth, kpts=pred[idx, 7:].T, steps=3)
 
             # Print time (inference + NMS)
-            print(f"Done. ({(1E3 * (t2 - t1)):.1f}ms) Inference, ({(1E3 * (t3 - t2)):.1f}ms) NMS")
+            print(
+                f"Done. ({(1E3 * (t2 - t1)):.1f}ms) Inference, ({(1E3 * (t3 - t2)):.1f}ms) NMS"
+            )
             break  # Just take into account the first detected skeleton
 
     print(f"Done. ({time.time() - t0:.3f}s)")
@@ -114,14 +127,30 @@ def detect(weights, view_img, imgsz, annot, source, subsampling=0):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--weights", nargs="+", type=str, default="weights/yolov7-w6-pose.pt", help="model.pt path(s)")
-    parser.add_argument("--source", type=str, default="rs", help="Source")  # file/folder, rs for realsense
-    parser.add_argument("--img-size", type=int, default=640, help="Inference size (pixels)")
-    parser.add_argument("--device", default="", help="Cuda device, i.e. 0 or 0,1,2,3 or cpu")
-    parser.add_argument("--view-img", action="store_true", help="Display results")
-    parser.add_argument("--annot", action="store_true", help="Write skeleton annotations")
     parser.add_argument(
-        "--annot-file-name", default="annotations_3fps.json", help="Annotations file name with .json extension"
+        "--weights",
+        nargs="+",
+        type=str,
+        default="weights/yolov7-w6-pose.pt",
+        help="model.pt path(s)",
+    )
+    parser.add_argument(
+        "--source", type=str, default="rs", help="Source"
+    )  # file/folder, rs for realsense
+    parser.add_argument(
+        "--img-size", type=int, default=640, help="Inference size (pixels)"
+    )
+    parser.add_argument(
+        "--device", default="", help="Cuda device, i.e. 0 or 0,1,2,3 or cpu"
+    )
+    parser.add_argument("--view-img", action="store_true", help="Display results")
+    parser.add_argument(
+        "--annot", action="store_true", help="Write skeleton annotations"
+    )
+    parser.add_argument(
+        "--annot-file-name",
+        default="annotations_3fps.json",
+        help="Annotations file name with .json extension",
     )
     opt = parser.parse_args()
     print(opt)
@@ -140,20 +169,34 @@ if __name__ == "__main__":
             if folders[-1] == "":
                 folders.pop()
             content = os.listdir(source)
-            is_gesture_folder = np.any([i == "color" for i in content]) and np.any([i == "depth" for i in content])
+            is_gesture_folder = np.any([i == "color" for i in content]) and np.any(
+                [i == "depth" for i in content]
+            )
             if is_gesture_folder:  # Folder containing one gesture record
                 c = folders[-2]
-                print("Writing skeleton for " + c + " gesture, example " + str(int(folders[-1])))
+                print(
+                    "Writing skeleton for "
+                    + c
+                    + " gesture, example "
+                    + str(int(folders[-1]))
+                )
                 detect(weights, view_img, imgsz, annot, os.path.join(source))
             else:
                 nexts = os.listdir(source)
                 nexts.sort()
                 content = os.listdir(os.path.join(source, nexts[0]))
-                is_gesture_folder = np.any([i == "color" for i in content]) and np.any([i == "depth" for i in content])
+                is_gesture_folder = np.any([i == "color" for i in content]) and np.any(
+                    [i == "depth" for i in content]
+                )
                 if is_gesture_folder:  # Folder containing a single gesture records
                     c = folders[-1]
                     for n in nexts:
-                        print("Writing skeleton for " + folders[-1] + " gesture, example " + str(int(n)))
+                        print(
+                            "Writing skeleton for "
+                            + folders[-1]
+                            + " gesture, example "
+                            + str(int(n))
+                        )
                         detect(weights, view_img, imgsz, annot, os.path.join(source, n))
                 else:  # Folder containing many gestures
                     i = 0
@@ -161,13 +204,24 @@ if __name__ == "__main__":
                         then = os.listdir(os.path.join(source, c))
                         then.sort()
                         content = os.listdir(os.path.join(source, c, then[0]))
-                        is_gesture_folder = np.any([i == "color" for i in content]) and np.any(
-                            [i == "depth" for i in content]
-                        )
+                        is_gesture_folder = np.any(
+                            [i == "color" for i in content]
+                        ) and np.any([i == "depth" for i in content])
                         if not is_gesture_folder:
                             continue
                         records = os.listdir(os.path.join(source, c))
                         records.sort()
                         for record in records:
-                            print("Writing skeleton for " + c + " gesture, example " + str(int(record)))
-                            detect(weights, view_img, imgsz, annot, os.path.join(source, c, record))
+                            print(
+                                "Writing skeleton for "
+                                + c
+                                + " gesture, example "
+                                + str(int(record))
+                            )
+                            detect(
+                                weights,
+                                view_img,
+                                imgsz,
+                                annot,
+                                os.path.join(source, c, record),
+                            )
