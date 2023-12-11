@@ -134,14 +134,18 @@ python3 gestures_predict.py --source sample_images/next_left/00001
     
     Repeat this step for all the gestures you want to record, considering that **dataset_images** is the output path for your dataset and **your_gesture** is the gesture you are saving
 
-3. Annotate each of the gestures previously recorded:
+3. Configure the following configuration files inside the *cfg* folder:
+    
+    - *classes.yaml*: Indicate the classes of your dataset. 
+
+4. Annotate each of the gestures previously recorded:
 
 ```
 python3 detect_skeleton.py --source dataset_images --view-img --annot
 ```
 This command annotates all the previously recorded gestures. **--view-img** shows the images while detecting the skeleton. **--annot** annotates the gestures inside the folder in which the gesture is stored.
 
-4. Split annotated gestures with desired maximun duration
+5. Split annotated gestures with desired maximun duration
 
 ```
 python3 split_gestures_into_chunks.py --dataset-path your_path --output-folder your_output_path --max-frames 120 --stride 3
@@ -149,7 +153,7 @@ python3 split_gestures_into_chunks.py --dataset-path your_path --output-folder y
 
 From a dataset **--dataset-path** with gestures annotated, it samples the gestures to create a new dataset at **--output-folder** with the same gestures but with a maximun duration of **--max-frames** frames and sampled with **--stride** 3.
 
-5. From the previous dataset split into class-named folders, create a new dataset divided into train and val folders.
+6. From the previous dataset split into class-named folders, create a new dataset divided into train and val folders.
 
 ```
 python3 train_val_split.py --dataset-path your_path --output-folder your_output_path
@@ -157,7 +161,7 @@ python3 train_val_split.py --dataset-path your_path --output-folder your_output_
 
 **--dataset-path** is the input class-split dataset path, **--output-folder** is the path of the output dataset containing the same data but splitted into train and val folders. **--val-size** is the p.u. of the total examples considered for validation.
 
-6. Finally convert the .json skeleton dataset to the proper numpy format of the input of the model.
+7. Finally convert the .json skeleton dataset to the proper numpy format of the input of the model.
 
 ```
 python3 dataset_to_numpy.py --dataset-path your_path --output-folder your_output_path
