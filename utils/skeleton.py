@@ -36,8 +36,14 @@ def split_skeleton_annotation(file, dataset_path="dataset", max_T=120, stride=3)
             data = video_info["data"][f * stride :]
         for i, d in enumerate(data):
             d["frame_index"] = i
-        new_file = {"data": data, "label": video_info["label"], "label_index": video_info["label_index"]}
-        with open(os.path.join(path, str(new_example).zfill(7) + ".json"), "w") as outfile:
+        new_file = {
+            "data": data,
+            "label": video_info["label"],
+            "label_index": video_info["label_index"],
+        }
+        with open(
+            os.path.join(path, str(new_example).zfill(7) + ".json"), "w"
+        ) as outfile:
             outfile.write(json.dumps(new_file, indent=4))
             new_example += 1
 
@@ -97,7 +103,7 @@ class Skeleton3D:
         self.annot = annot
         if self.annot:
             annot_dict = load_yaml(cfg_classes)
-            pair = [(k, v) for k, v in annot_dict.items() if k in annot_name][0]
+            pair = [(k, v) for k, v in annot_dict.items() if v in annot_name][0]
             self.annot_name = annot_name
             self.annotations = {"data": [], "label": pair[0], "label_index": pair[1]}
             self.frame_cont = 0
@@ -130,15 +136,17 @@ class Skeleton3D:
         Add skeleton frame to annotations dict
         """
         self.frame_dict = {"frame_index": self.frame_cont, "skeleton": []}
-        self.add_skeleton(pts, scores)
-        self.frame_dict["skeleton"].append(self.skeleton)
+        skeleton = self.add_skeleton(pts, scores)
+        self.frame_dict["skeleton"].append(skeleton)
         self.annotations["data"].append(self.frame_dict)
         self.frame_cont += 1
 
-    def add_skeleton(self, pts, scores):
-        self.skeleton = {}
-        self.skeleton["pose"] = pts
-        self.skeleton["score"] = scores
+    @staticmethod
+    def add_skeleton(pts, scores):
+        skeleton = {}
+        skeleton["pose"] = pts
+        skeleton["score"] = scores
+        return skeleton
 
     def write_annotations(self, filename="annotation.json"):
         json_obj = json.dumps(self.annotations, indent=4)
@@ -197,7 +205,9 @@ class Skeleton3D:
         self.ax.set_yticks(np.arange(-1, 1, 0.5))
         self.ax.set_zticks(np.arange(-1, 1, 0.5))
         # To draw the gesture
-        self.ax.text(0.75, -0.75, 0.25, self.gesture, color=self.gesture_color, fontsize=20)
+        self.ax.text(
+            0.75, -0.75, 0.25, self.gesture, color=self.gesture_color, fontsize=20
+        )
         for kid in range(num_kpts):
             r, g, b = self.pose_kpt_color[kid]
             if confidences[kid] < 0.5:
@@ -239,10 +249,14 @@ class Skeleton3D:
         self.ax.set_yticks(np.arange(-1, 1, 0.5))
         self.ax.set_zticks(np.arange(-1, 1, 0.5))
         # To draw the gesture
-        self.ax.text(0.75, -0.75, 0.25, self.gesture, color=self.gesture_color, fontsize=20)
+        self.ax.text(
+            0.75, -0.75, 0.25, self.gesture, color=self.gesture_color, fontsize=20
+        )
         points_3d = []
         confidences = []
-        depth_image = cv2.applyColorMap(cv2.convertScaleAbs(depth, alpha=0.03), cv2.COLORMAP_JET)
+        depth_image = cv2.applyColorMap(
+            cv2.convertScaleAbs(depth, alpha=0.03), cv2.COLORMAP_JET
+        )
         for kid in range(num_kpts):
             r, g, b = self.pose_kpt_color[kid]
             x_coord, y_coord = kpts[steps * kid], kpts[steps * kid + 1]
@@ -261,20 +275,44 @@ class Skeleton3D:
                 Z = self.depth_windowing(depth, int(x_coord), int(y_coord))
                 X, Y, Z = self.calculate_3D_points(x_coord, y_coord, Z)
                 points_3d[-3:] = X, Y, Z
-                self.ax.scatter(X, Y, Z, marker="o", c=np.array([[int(b / 255), int(g / 255), int(r / 255)]]))
+                self.ax.scatter(
+                    X,
+                    Y,
+                    Z,
+                    marker="o",
+                    c=np.array([[int(b / 255), int(g / 255), int(r / 255)]]),
+                )
                 if self.show:
-                    cv2.circle(im, (int(x_coord), int(y_coord)), radius, (int(r), int(g), int(b)), -1)
+                    cv2.circle(
+                        im,
+                        (int(x_coord), int(y_coord)),
+                        radius,
+                        (int(r), int(g), int(b)),
+                        -1,
+                    )
                     cv2.rectangle(
                         im,
-                        (int(x_coord) - self.window_size, int(y_coord) - self.window_size),
-                        (int(x_coord) + self.window_size, int(y_coord) + self.window_size),
+                        (
+                            int(x_coord) - self.window_size,
+                            int(y_coord) - self.window_size,
+                        ),
+                        (
+                            int(x_coord) + self.window_size,
+                            int(y_coord) + self.window_size,
+                        ),
                         (0, 255, 0),
                         2,
                     )
                     cv2.rectangle(
                         depth_image,
-                        (int(x_coord) - self.window_size, int(y_coord) - self.window_size),
-                        (int(x_coord) + self.window_size, int(y_coord) + self.window_size),
+                        (
+                            int(x_coord) - self.window_size,
+                            int(y_coord) - self.window_size,
+                        ),
+                        (
+                            int(x_coord) + self.window_size,
+                            int(y_coord) + self.window_size,
+                        ),
                         (0, 255, 0),
                         2,
                     )
@@ -322,7 +360,11 @@ class Skeleton3D:
         if self.video_color is not None:
             self.video_color(im)
             self.video_depth(depth_image)
-            plt.savefig(os.path.join(self.output_path, "plots", str(self.cont).zfill(5) + ".png"))
+            plt.savefig(
+                os.path.join(
+                    self.output_path, "plots", str(self.cont).zfill(5) + ".png"
+                )
+            )
         plt.draw()
         plt.pause(0.00000001)
         self.cont += 1
@@ -382,7 +424,9 @@ class SkeletonFeeder(torch.utils.data.Dataset):
 
     def load_data(self):
         # load file list
-        self.sample_name = [file for file in os.listdir(self.data_path) if file.endswith(".json")]
+        self.sample_name = [
+            file for file in os.listdir(self.data_path) if file.endswith(".json")
+        ]
         # output data shape (N, C, T, V, M)
         self.N = len(self.sample_name)  # samples
         self.C = 4  # channels
