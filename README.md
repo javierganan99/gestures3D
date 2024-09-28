@@ -103,7 +103,7 @@ If you want to try the aircraft-marshaling-6-signals pretrained model with color
 
 1. Download the sample images in the following link:
 
-https://drive.google.com/file/d/1QQ2xgk1E99jJ1i2c0OtdvBKQkYMsd2Vr/view?usp=share_link
+https://drive.google.com/drive/folders/1KqpEDlfGxs3eizraGxY_vbAJlItvTBoX?usp=sharing
 
 2. Go to the folder where the zip file is downloaded and unzip it to the repository folder:
 
